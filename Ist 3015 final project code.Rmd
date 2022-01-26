@@ -1,0 +1,100 @@
+---
+title: "Final Project"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## IST3015 End Semester project Created by Michael Ngugi Murei 658267
+
+This is an R Markdown document.
+
+## Importing the dataset
+
+```{r importing data}
+library(readxl)
+Yield_Factors_All_Years <- read_excel("C:/Users/REALZ/Documents/IST 3015/Ist 3015 final project/Yield Factors- All Years.xlsx")
+Yield_Factors_All_Years
+```
+This data set contains information on yield output on a national and global scale for each country for every year from 1961 to 2015. Each Yield output has been measured from a different category of industrial land sector which are; Crop land, Grazing land, Marine fishing grounds, Inland fishing grounds and Forest land.
+
+## Structure of the Dataset
+```{r structure of dataset}
+str(Yield_Factors_All_Years)
+```
+The data set type is a data frame, and contains 72,354 rows with 7 columns. There is the batch id column of Ratio numerical datatype, Country which consists of all Countries and is of Categorical character datatype, Year a Categorical numerical datatype consisting the year in which the yield was measured, Country code represents the numerical code for each country, Land type a Categorical character data type shows the specific area of yield production, National Yield a numerical datatype displays the measurement of yield on a national level and there is World yield that has the measurements of yields on a global scale and is a Interval numeric datatype.
+
+
+## Grazing land in 2016
+
+```{r grazing land 2016}
+library(dplyr)
+Yield_Factors_All_Years %>%
+  filter(Year == 2016, Land_type == "Grazing Land")
+```
+
+From the data above we notice smaller countries especially those that are islands have zero or low national yield. This could be probably because of not enough area for grazing or climatic conditions are sustainable among other factors. Also we notice that for the year 2016 most of the countries if not all have a World Yield of 6.19 on average.
+
+## Creating new column Yield_Factor
+
+```{r Yield factor column}
+Yield_Factors_All_Years %>%
+  mutate(Yield_Factor = National_Yield / World_Yield)
+```
+
+This data can show that a yield factor of probably 0.5 and above indicate a good amount of yield is being produced on the particular Land Type sector
+
+## Creating Infrastructure dataset
+```{r}
+library(ggplot2)
+
+infrastructure <- Yield_Factors_All_Years %>% filter(Land_type == "Infrastructure")
+infrastructure
+# creating the scatter plot
+ggplot(infrastructure, aes(x = National_Yield, y = World_Yield)) +
+  geom_point()
+```
+
+This data set shows that in the Infrastructure land type there is no yield being produced both on national and global level. 
+
+## Scatter plot for year 2016
+```{r plot for 2016}
+Year_2016 <- Yield_Factors_All_Years %>% filter(Year == 2016) %>%
+  group_by(Land_type)
+
+ggplot(Year_2016, aes(x = National_Yield, y = World_Yield)) +
+  geom_point() + facet_wrap(~ Land_type)
+```
+
+Comparing national yield and world yield for each land type we notice that for the year 2016 forest land, grazing land, infrastructure and inland fishing ground had a poor relationship meaning not a lot of yield was being produced both nationally and globally for each country. For crop land more World yield was being produced than on a national level. We also notice that for Marine Fishing grounds has a relatively constant World yield as the national yield varies.
+
+## Finding median national yield and yield factor
+```{r national and yield}
+Yield_Factors_All_Years %>% 
+  group_by(Land_type, Year) %>%
+  mutate(Yield_Factor = National_Yield / World_Yield) %>% 
+  summarize(medianNationalYield = median(National_Yield), medianWorldYield = median(World_Yield), medianYieldFactor = median(Yield_Factor))
+```
+
+We notice that not all land type for example crop land has been unable to calculate the median probably because the values are too low. For Forest land we are able to obtain median for all columns. Grazing land we are only able to obtain median for world yield only. Infrastructure has median for 0 world and national and is unable to calculate median Yield factor and this goes same for inland fishing ground. For Marine fishing grounds we are able to obtain the median for all values.
+
+
+## Line plot for Median Yield Factor
+```{r Median yield factor plot}
+MedianYieldPlot <- Yield_Factors_All_Years %>%
+  group_by(Year, Land_type) %>%
+  mutate(Yield_Factor = National_Yield / World_Yield) %>%
+  summarize(medianYieldFactor = median(Yield_Factor))
+
+ggplot(MedianYieldPlot, aes(x = Year, y = medianYieldFactor)) + geom_line() +
+  facet_wrap(~ Land_type)
+```
+
+Only two land types are able calculate median yield factor. For forest land, the line plot shows us the median started on a high in the year 1962 and drops as it progresses through the years and starts rising in the year 2000 going to the same point as 1962. for Marine fishing grounds the line plot shows that it started on an all high but through the years has reducing with only a slight growth once but after that continues having a decline and comes to a constant in the year 2015 and 2016.
+
+
+## THE END
